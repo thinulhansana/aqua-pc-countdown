@@ -10,6 +10,8 @@
   <meta name="description" content="Official launch countdown for Aqua PC Solutions — November 21 at 00:00:00." />
   <meta name="theme-color" content="#03060d" />
 
+  <link rel="preload" as="video" href="assets/aqua_pc_solutions_ad.mp4" type="video/mp4" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -22,12 +24,9 @@
 </head>
 
 <body>
-  <!-- Soft Ambient Backdrop -->
+  <!-- Lightweight CSS Ambient Backdrop (zero GPU video blur overhead) -->
   <div class="ambient-bg" aria-hidden="true">
-    <video id="bg-loop-video" class="bg-video" autoplay loop muted playsinline preload="auto" poster="assets/hero-rig.jpg">
-      <source src="assets/aqua_pc_solutions_ad.mp4" type="video/mp4" />
-      <source src="../marketing-video/aqua_pc_solutions_ad.mp4" type="video/mp4" />
-    </video>
+    <div class="ambient-glow"></div>
     <div class="ambient-scrim"></div>
   </div>
 
@@ -45,12 +44,10 @@
       </div>
     </header>
 
-    <!-- Centerpiece: Looping Video Clip -->
-    <section class="video-shell" aria-label="Official Launch Video">
-      <video id="main-video" class="main-video" autoplay loop muted playsinline preload="auto" poster="assets/hero-rig.jpg">
-        <source src="assets/aqua_pc_solutions_ad.mp4" type="video/mp4" />
-        <source src="../marketing-video/aqua_pc_solutions_ad.mp4" type="video/mp4" />
-      </video>
+    <!-- Centerpiece: Single Hardware-Accelerated Looping Video -->
+    <section class="video-shell" id="video-shell" aria-label="Official Launch Video">
+      <video id="main-video" class="main-video" src="assets/aqua_pc_solutions_ad.mp4" autoplay loop muted playsinline
+        preload="auto" poster="assets/hero-rig.jpg"></video>
 
       <div class="video-actions">
         <button id="sound-toggle-btn" class="glass-btn" type="button" aria-label="Toggle sound">

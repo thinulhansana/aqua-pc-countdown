@@ -1,5 +1,5 @@
 /* ==========================================================================
-   AQUA PC SOLUTIONS — MINIMAL COUNTDOWN & LOOPING VIDEO CONTROLLER
+   AQUA PC SOLUTIONS — MINIMAL COUNTDOWN & SMOOTH 60FPS VIDEO CONTROLLER
    Target Launch: November 21, 2026 at 00:00:00
    ========================================================================== */
 
@@ -15,57 +15,81 @@
   const countdownGrid = document.getElementById("countdown-grid");
   const launchLabel = document.getElementById("launch-label");
 
+  const videoShell = document.getElementById("video-shell");
   const mainVideo = document.getElementById("main-video");
-  const bgVideo = document.getElementById("bg-loop-video");
   const soundBtn = document.getElementById("sound-toggle-btn");
   const soundIcon = document.getElementById("sound-icon");
   const soundText = document.getElementById("sound-text");
   const fullscreenBtn = document.getElementById("fullscreen-btn");
-  const videoShell = document.querySelector(".video-shell");
 
   function pad(n) {
     return String(Math.max(0, Math.floor(n))).padStart(2, "0");
   }
 
-  function tick() {
-    const diff = Math.max(0, targetTime - Date.now());
-    const totalSec = Math.floor(diff / 1000);
+  let lastRenderedEpochSec = -1;
 
-    const days = Math.floor(totalSec / 86400);
-    const hours = Math.floor((totalSec % 86400) / 3600);
-    const minutes = Math.floor((totalSec % 3600) / 60);
-    const seconds = totalSec % 60;
+  function updateClock() {
+    const now = Date.now();
+    const epochSec = Math.floor(now / 1000);
 
-    if (daysEl) daysEl.textContent = pad(days);
-    if (hoursEl) hoursEl.textContent = pad(hours);
-    if (minutesEl) minutesEl.textContent = pad(minutes);
-    if (secondsEl) secondsEl.textContent = pad(seconds);
+    if (epochSec !== lastRenderedEpochSec) {
+      lastRenderedEpochSec = epochSec;
+      const diff = Math.max(0, targetTime - now);
+      const totalSec = Math.floor(diff / 1000);
 
-    if (diff <= 0) {
-      countdownGrid?.classList.add("launched");
-      if (launchLabel) launchLabel.textContent = "LIVE NOW · NOVEMBER 21";
+      const days = Math.floor(totalSec / 86400);
+      const hours = Math.floor((totalSec % 86400) / 3600);
+      const minutes = Math.floor((totalSec % 3600) / 60);
+      const seconds = totalSec % 60;
+
+      if (daysEl) daysEl.textContent = pad(days);
+      if (hoursEl) hoursEl.textContent = pad(hours);
+      if (minutesEl) minutesEl.textContent = pad(minutes);
+      if (secondsEl) secondsEl.textContent = pad(seconds);
+
+      if (diff <= 0) {
+        countdownGrid?.classList.add("launched");
+        if (launchLabel) launchLabel.textContent = "LIVE NOW · NOVEMBER 21";
+      }
     }
+
+    requestAnimationFrame(updateClock);
   }
 
-  tick();
-  setInterval(tick, 250);
+  requestAnimationFrame(updateClock);
 
-  function keepLooping(video) {
-    if (!video) return;
-    video.loop = true;
-    video.playsInline = true;
-    video.play().catch(() => {
-      video.muted = true;
-      video.play().catch(() => {});
-    });
-    video.addEventListener("ended", () => {
-      video.currentTime = 0;
-      video.play().catch(() => {});
+  if (mainVideo) {
+    mainVideo.loop = true;
+    mainVideo.playsInline = true;
+
+    const markReady = () => {
+      videoShell?.classList.add("is-ready");
+    };
+
+    if (mainVideo.readyState >= 2) {
+      markReady();
+    } else {
+      mainVideo.addEventListener("loadeddata", markReady, { once: true });
+      mainVideo.addEventListener("canplay", markReady, { once: true });
+    }
+
+    const startPlayback = () => {
+      const p = mainVideo.play();
+      if (p && typeof p.catch === "function") {
+        p.catch(() => {
+          mainVideo.muted = true;
+          mainVideo.play().catch(() => {});
+        });
+      }
+    };
+
+    startPlayback();
+
+    mainVideo.addEventListener("ended", () => {
+      mainVideo.currentTime = 0;
+      startPlayback();
     });
   }
-
-  keepLooping(mainVideo);
-  keepLooping(bgVideo);
 
   function syncSoundUI(muted) {
     if (soundIcon) soundIcon.textContent = muted ? "volume_off" : "volume_up";
