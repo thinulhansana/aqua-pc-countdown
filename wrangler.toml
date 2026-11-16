@@ -1,9 +1,3 @@
 name = "aquapccountdown"
 compatibility_date = "2026-11-16"
-workers_dev = true
-
-[assets]
-directory = "."
-
-[observability]
-enabled = true
+pages_build_output_dir = "."
